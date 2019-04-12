@@ -4,11 +4,11 @@ Vserver and Vclient are included.
 # Depedence 
 This whole project based on go1.11 and redis.5.0.4. You need make sure the versions of them are newer then mine or at least keep same.
 # Usage
-1.git clone https://github.com/WeilaScofield/Vchat.git
-2.go build vServer and vClient
-3.make redis running
-4.open vServer starting to listen
-5.open vClient and have fun
+1.git clone https://github.com/WeilaScofield/Vchat.git\n
+2.go build vServer and vClient\n
+3.make redis running\n
+4.open vServer starting to listen\n
+5.open vClient and have fun\n
 # Extension
 Vchat developed follows MVC model so that it owns great extensibility. Many interfaces have been exposed for new functions extension later.
 # Reference
