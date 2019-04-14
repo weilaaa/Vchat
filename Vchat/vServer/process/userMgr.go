@@ -3,7 +3,7 @@ package process
 import "fmt"
 
 // define only global variable as userMgr
-var userMgr *UserMgr
+var UserMGR *UserMgr
 
 // keep online user
 type UserMgr struct {
@@ -11,7 +11,7 @@ type UserMgr struct {
 }
 
 func init() {
-	userMgr = &UserMgr{
+	UserMGR = &UserMgr{
 		make(map[int]*UserProcess, 1024),
 	}
 }

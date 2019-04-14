@@ -16,15 +16,29 @@ type Processor struct {
 func (this *Processor) Process() {
 	defer this.Conn.Close()
 	// read conn on loop
+	// keep curUserId to record current user
+	var curUserId *int
+	a := 1
+	curUserId = &a
 	for {
 		tf := &utils.Transfer{
 			Conn: this.Conn,
 		}
 
 		mes, err := tf.ReadPKG()
+
 		if err != nil {
 			if err == io.EOF {
-				fmt.Println("got message successfully")
+				userID := *curUserId
+				fmt.Printf("%d has offline\n", userID)
+				userName := process.UserMGR.OnlineUser[userID].UserName
+				userProcess := process.UserProcess{
+					Conn:     this.Conn,
+					UserName: userName,
+					UserID:   userID,
+				}
+				delete(process.UserMGR.OnlineUser, userID)
+				userProcess.NotifyMeOffline(userID, userName)
 				break
 			} else {
 				fmt.Println("got message struct failed", err)
@@ -33,7 +47,7 @@ func (this *Processor) Process() {
 		}
 		fmt.Println("got message data", mes.Data)
 
-		err = this.ServerProcessMes(&mes)
+		err = this.ServerProcessMes(&mes, curUserId)
 		if err != nil {
 			fmt.Println("choose bunch failed")
 			return
@@ -44,14 +58,14 @@ func (this *Processor) Process() {
 }
 
 // process the message came from client
-func (this *Processor) ServerProcessMes(mes *message.Message) (err error) {
+func (this *Processor) ServerProcessMes(mes *message.Message, curUserId *int) (err error) {
 	switch mes.Type {
 	// process login business
 	case message.LoginMesType:
 		up := &process.UserProcess{
 			Conn: this.Conn,
 		}
-		err := up.ServerProcessLogin(mes)
+		err := up.ServerProcessLogin(mes, curUserId)
 		if err != nil {
 			fmt.Println("server process login failed", err)
 			return err
@@ -65,15 +79,18 @@ func (this *Processor) ServerProcessMes(mes *message.Message) (err error) {
 		if err != nil {
 			fmt.Println("server process register failed", err)
 		}
-		return
+		return err
 	// process message sending business
 	case message.SmsMesType:
 		smsMes := process.SmsProcess{}
 		smsMes.SendGroupMes(mes)
+	case message.SmsMesP2PType:
+		smsMes := process.SmsProcess{}
+		smsMes.SendP2PMes(mes)
 	default:
 		fmt.Println("unrecognized type")
 		return err
 	}
 
-	return err
+	return
 }

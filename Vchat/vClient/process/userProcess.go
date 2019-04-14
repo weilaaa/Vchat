@@ -170,20 +170,19 @@ func (this *UserProcess) Login(userID int, userPW string) (err error) {
 
 		// acquire usersID online
 		fmt.Println("users online")
-		for _,i := range loginResMes.UsersName {
-			fmt.Println(i)
-			// initialize userOnline map
+		for id, name := range loginResMes.Users {
+			fmt.Printf("userID:%d\tuserName:%s\n", id, name)
 			user := &message.User{
-				UserName:     i,
+				UserName:   name,
+				UserId:     id,
 				UserStatus: message.UserOnline,
 			}
-
-			onlineUser[i] = user
+			onlineUser[name] = user
 		}
 
 		// begin to watch connection between S&C
 		go watcher(conn)
-		showMenu()
+		showMenu(loginResMes.LoginUserName)
 	} else if loginResMes.Code == 500 {
 		fmt.Println("account doesn't exist, register now")
 	} else {

@@ -8,6 +8,7 @@ const (
 	RegisterResMesType      = "RegisterResMes"
 	NotifyUserStatusMesType = "NotifyUserStatusMes"
 	SmsMesType              = "SmsMesType"
+	SmsMesP2PType           = "SmsMesP2P"
 )
 
 const (
@@ -29,6 +30,13 @@ type SmsMes struct {
 	User
 }
 
+type SmsMesP2P struct {
+	Content    string `json:"content"`
+	SenderId   int    `json:"sender_id"`
+	ReceiverId int    `json:"receiver_id"`
+	SenderName string `json:"sender_name"`
+}
+
 // message of user status
 type NotifyUserStatusMes struct {
 	UserID   int    `json:"user_id"`
@@ -43,10 +51,12 @@ type LoginMes struct {
 }
 
 type LoginResMes struct {
-	Code      int    `json:"code"`
-	UsersName []string `json:"users_name"`
-	UsersID   []int  `json:"users_id"`
-	Error     error  `json:"error"`
+	Code          int            `json:"code"`
+	LoginUserName string         `json:"login_user_name"`
+	Users         map[int]string `json:"users"`
+	//UsersName     []string       `json:"users_name"`
+	//UsersID       []int          `json:"users_id"`
+	Error error `json:"error"`
 }
 
 // message of register

@@ -16,8 +16,48 @@ type UserProcess struct {
 	UserName string
 }
 
+func (this *UserProcess) NotifyOthers(userId int, userName string) {
+	var mes message.Message
+	mes.Type = message.NotifyUserStatusMesType
+
+	var notifyUserStatusMes message.NotifyUserStatusMes
+	notifyUserStatusMes.UserID = userId
+	notifyUserStatusMes.UserName = userName
+	notifyUserStatusMes.Status = message.UserOffline
+
+	data, err := json.Marshal(notifyUserStatusMes)
+	if err != nil {
+		fmt.Println("notifyUserStatusMes marshal failed")
+		return
+	}
+
+	mes.Data = string(data)
+
+	data, err = json.Marshal(mes)
+	if err != nil {
+		fmt.Println("message.message form notification failed")
+		return
+	}
+
+	tf := utils.Transfer{
+		Conn: this.Conn,
+	}
+
+	err = tf.WritePKG(data)
+	if err != nil {
+		fmt.Println("write data from notification failed")
+		return
+	}
+}
+
+func (this *UserProcess) NotifyMeOffline(userID int, userName string) {
+	for _, v := range UserMGR.OnlineUser {
+		v.NotifyOthers(userID, userName)
+	}
+}
+
 func (this *UserProcess) NotifyOtherUserOnline(userID int, userName string) {
-	for i, v := range userMgr.OnlineUser {
+	for i, v := range UserMGR.OnlineUser {
 		if i == userID {
 			continue
 		}
@@ -36,8 +76,6 @@ func (this *UserProcess) NotifyMeOnline(userID int, userName string) {
 	notifyUserStatusMes.UserID = userID
 	notifyUserStatusMes.UserName = userName
 	notifyUserStatusMes.Status = message.UserOnline
-
-	fmt.Println("4.", notifyUserStatusMes.UserName)
 
 	data, err := json.Marshal(notifyUserStatusMes)
 	if err != nil {
@@ -125,7 +163,7 @@ func (this *UserProcess) ServerProcessRegister(mes *message.Message) (err error)
 }
 
 // here we need transfer the pointer of mes, cause we want to modify it
-func (this *UserProcess) ServerProcessLogin(mes *message.Message) (err error) {
+func (this *UserProcess) ServerProcessLogin(mes *message.Message, curUserId *int) (err error) {
 	var loginMes message.LoginMes
 	err = json.Unmarshal([]byte(mes.Data), &loginMes)
 	if err != nil {
@@ -140,6 +178,7 @@ func (this *UserProcess) ServerProcessLogin(mes *message.Message) (err error) {
 
 	// create a container
 	var loginResMes message.LoginResMes
+	loginResMes.Users = make(map[int]string)
 
 	// fill container
 	user, err := model.MyUserDao.Login(loginMes.UserID, loginMes.UserPW)
@@ -160,26 +199,24 @@ func (this *UserProcess) ServerProcessLogin(mes *message.Message) (err error) {
 		loginResMes.Code = 200
 		this.UserID = loginMes.UserID
 		this.UserName = user.UserName
+		*curUserId = loginMes.UserID
 		// add user to userMgr
-		userMgr.AddOnlineUser(this)
+		UserMGR.AddOnlineUser(this)
 		fmt.Println(this.UserName, "has been added to usersOnline")
 
 		// notify other users new user online
 		this.NotifyOtherUserOnline(loginMes.UserID, user.UserName)
 
 		// append usersId online to container
-		for i := range userMgr.OnlineUser {
-			loginResMes.UsersID = append(loginResMes.UsersID, i)
+		for id, up := range UserMGR.OnlineUser {
+			loginResMes.Users[id] = up.UserName
 		}
 
-		for _, up := range userMgr.OnlineUser {
-			loginResMes.UsersName = append(loginResMes.UsersName, up.UserName)
-		}
+		loginResMes.LoginUserName = user.UserName
 
 		fmt.Println(user, "login successfully")
 	}
 
-	fmt.Println("3.", loginResMes.UsersName)
 	// package container
 	data, err := json.Marshal(loginResMes)
 	if err != nil {

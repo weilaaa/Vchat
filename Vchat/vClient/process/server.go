@@ -11,16 +11,17 @@ import (
 )
 
 // display second menu after login
-func showMenu() {
+func showMenu(loginUserName string) {
 	smsProcess := Smsprocess{}
+	fmt.Printf("Welcome home,%s\n", loginUserName)
 	for {
-		fmt.Println("Welcome home")
 		fmt.Println("1.Users online")
-		fmt.Println("2.Send message")
-		fmt.Println("3.Message list")
+		fmt.Println("2.Send group message")
+		fmt.Println("3.Send P2P message")
 		fmt.Println("4.out of system")
 
 		var content string
+		var receiverID int
 		var key int
 		fmt.Scanf("%d\n", &key)
 		switch key {
@@ -34,7 +35,14 @@ func showMenu() {
 				fmt.Println("send group sms failed", err)
 			}
 		case 3:
-			fmt.Println("Message list")
+			fmt.Println("choose a friend")
+			fmt.Scanf("%d\n", &receiverID)
+			fmt.Println("say something")
+			fmt.Scanf("%s\n", &content)
+			err := smsProcess.SendP2PSMs(content, receiverID)
+			if err != nil {
+				fmt.Println("send P2P sms failed", err)
+			}
 		case 4:
 			fmt.Println("Out of system")
 			os.Exit(1)
@@ -64,7 +72,6 @@ func watcher(conn net.Conn) {
 		case message.NotifyUserStatusMesType:
 			var notifyUserStatus message.NotifyUserStatusMes
 			err := json.Unmarshal([]byte(mes.Data), &notifyUserStatus)
-			fmt.Println("1.",notifyUserStatus.UserName)
 			if err != nil {
 				fmt.Println("notify message unmarshal failed")
 			}
@@ -72,7 +79,8 @@ func watcher(conn net.Conn) {
 			updateUserStatus(&notifyUserStatus)
 		case message.SmsMesType:
 			displayGroupMes(&mes)
-
+		case message.SmsMesP2PType:
+			displayP2PMes(&mes)
 		default:
 			fmt.Println("unrecognizable type")
 		}

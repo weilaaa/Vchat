@@ -18,7 +18,7 @@ func updateUserStatus(notifyUserStatusMes *message.NotifyUserStatusMes) {
 		user = &message.User{
 			UserId:     notifyUserStatusMes.UserID,
 			UserName:   notifyUserStatusMes.UserName,
-			UserStatus: notifyUserStatusMes.UserID,
+			UserStatus: notifyUserStatusMes.Status,
 		}
 	}
 	user.UserStatus = notifyUserStatusMes.Status
@@ -31,6 +31,6 @@ func updateUserStatus(notifyUserStatusMes *message.NotifyUserStatusMes) {
 func displayOnlineUser() {
 	fmt.Println("display users online")
 	for _, v := range onlineUser {
-		fmt.Println(v.UserName)
+		fmt.Printf("userName:%s\tuserID:%d\tuserStatus:%d\n", v.UserName, v.UserId, v.UserStatus)
 	}
 }

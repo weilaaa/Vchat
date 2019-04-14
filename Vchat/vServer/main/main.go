@@ -26,7 +26,7 @@ func main() {
 	defer listener.Close()
 
 	// accept connect on loop
-	fmt.Println("that's newer")
+	fmt.Println("welcome to Vchat")
 	fmt.Println("waiting for first connection")
 	for {
 		conn, err := listener.Accept()
