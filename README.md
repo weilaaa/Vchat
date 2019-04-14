@@ -18,3 +18,7 @@ This whole project based on go1.11 and redis.5.0.4. You need make sure the versi
 Vchat developed follows MVC model so that it owns great extensibility. Many interfaces have been exposed for new functions extension later.
 # Reference
 Some details refer to the project of Han ShunPing.
+# Conversation
+If you guys have any interests to discuss or figure out any problems, you can cantact me.
+Wechat:cai4561168630
+e-mail:weilanidaye@gmail.com
