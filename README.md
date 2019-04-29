@@ -13,6 +13,7 @@ This whole project based on go1.11 and redis.5.0.4. You need make sure the versi
 
 # Usage
 No.1
+
 1.git clone https://github.com/WeilaScofield/Vchat.git
 
 2.go build vServer and vClient
@@ -24,7 +25,9 @@ No.1
 5.open vClient and have fun
 
 No.2
+
 1.get the client of winClient, macClient or linuxClient
+
 2.enjoy chatting free
 
 # Extension
