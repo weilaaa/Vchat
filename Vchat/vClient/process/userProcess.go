@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"os"
 )
 
 type UserProcess struct {
@@ -23,7 +22,7 @@ func (this *UserProcess) Register(userID int, userPW, userNAME string) (err erro
 	fmt.Scanf("%s\n", &userNAME)
 
 	// generate a connection
-	conn, err := net.Dial("tcp", "localhost:8889")
+	conn, err := net.Dial("tcp", "47.101.47.229:8889")
 	if err != nil {
 		log.Fatalln("client connected failed", err)
 	}
@@ -83,10 +82,8 @@ func (this *UserProcess) Register(userID int, userPW, userNAME string) (err erro
 	// unpack container
 	if RegisterResMes.Code == 200 {
 		fmt.Println("register successfully")
-		os.Exit(0)
 	} else {
 		fmt.Println("register failed from register")
-		os.Exit(0)
 	}
 	return
 
@@ -100,7 +97,7 @@ func (this *UserProcess) Login(userID int, userPW string) (err error) {
 	fmt.Scanf("%s\n", &userPW)
 
 	// generate a connection
-	conn, err := net.Dial("tcp", "localhost:8889")
+	conn, err := net.Dial("tcp", "47.101.47.229:8889")
 	if err != nil {
 		log.Fatalln("client connected failed", err)
 	}

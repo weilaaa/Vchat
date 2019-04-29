@@ -18,7 +18,7 @@ func (this *Processor) Process() {
 	// read conn on loop
 	// keep curUserId to record current user
 	var curUserId *int
-	a := 1
+	a := -1
 	curUserId = &a
 	for {
 		tf := &utils.Transfer{
@@ -28,8 +28,12 @@ func (this *Processor) Process() {
 		mes, err := tf.ReadPKG()
 
 		if err != nil {
+			// if connection closed by client
 			if err == io.EOF {
 				userID := *curUserId
+				if userID == -1{
+					break
+				}
 				fmt.Printf("%d has offline\n", userID)
 				userName := process.UserMGR.OnlineUser[userID].UserName
 				userProcess := process.UserProcess{

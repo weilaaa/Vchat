@@ -19,7 +19,8 @@ func main() {
 	// init userDao
 	initUserDao()
 
-	listener, err := net.Listen("tcp", "0.0.0.0:8889")
+	//172.17.19.243
+	listener, err := net.Listen("tcp", "172.17.19.243:8889")
 	if err != nil {
 		log.Fatalln("listen failed", err)
 	}
