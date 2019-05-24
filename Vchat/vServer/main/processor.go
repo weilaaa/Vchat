@@ -53,7 +53,7 @@ func (this *Processor) Process() {
 
 		err = this.ServerProcessMes(&mes, curUserId)
 		if err != nil {
-			fmt.Println("choose bunch failed")
+			fmt.Println("choose branch failed")
 			return
 		}
 	}
@@ -91,6 +91,9 @@ func (this *Processor) ServerProcessMes(mes *message.Message, curUserId *int) (e
 	case message.SmsMesP2PType:
 		smsMes := process.SmsProcess{}
 		smsMes.SendP2PMes(mes)
+	case message.BinTransferType:
+		smsMes := process.SmsProcess{}
+		smsMes.BinFileMes(mes)
 	default:
 		fmt.Println("unrecognized type")
 		return err

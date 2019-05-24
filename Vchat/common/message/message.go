@@ -9,6 +9,8 @@ const (
 	NotifyUserStatusMesType = "NotifyUserStatusMes"
 	SmsMesType              = "SmsMesType"
 	SmsMesP2PType           = "SmsMesP2P"
+	BinTransferType         = "BinTransfer"
+	FeedBackMesType			= "FeedBackMes"
 )
 
 const (
@@ -28,6 +30,14 @@ type Message struct {
 type SmsMes struct {
 	Content string `json:"content"`
 	User
+}
+
+type BinTransfer struct {
+	Content    []byte `json:"content"`
+	FileName   string `json:"file_name"`
+	SenderId   int    `json:"sender_id"`
+	ReceiverId int    `json:"receiver_id"`
+	SenderName string `json:"sender_name"`
 }
 
 type SmsMesP2P struct {
@@ -67,4 +77,8 @@ type RegisterMes struct {
 type RegisterResMes struct {
 	Code  int   `json:"code"`
 	Error error `json:"error"`
+}
+
+type FeedBackMes struct {
+	Content string `json:"content"`
 }

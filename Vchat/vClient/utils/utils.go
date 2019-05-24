@@ -1,6 +1,6 @@
 package utils
 
-import (
+/*import (
 	"Vchat/common/message"
 	"encoding/binary"
 	"encoding/json"
@@ -71,3 +71,4 @@ func (this *Transfer) WritePKG(data []byte) (err error) {
 
 	return
 }
+*/

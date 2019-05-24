@@ -21,8 +21,8 @@ func (this *UserProcess) Register(userID int, userPW, userNAME string) (err erro
 	fmt.Println("ENTER YOUR USERNAME")
 	fmt.Scanf("%s\n", &userNAME)
 
-	// generate a connection
-	conn, err := net.Dial("tcp", "47.101.47.229:8889")
+	// generate a connection 47.101.47.229:8889
+	conn, err := net.Dial("tcp", "localhost:8889")
 	if err != nil {
 		log.Fatalln("client connected failed", err)
 	}
@@ -97,7 +97,7 @@ func (this *UserProcess) Login(userID int, userPW string) (err error) {
 	fmt.Scanf("%s\n", &userPW)
 
 	// generate a connection
-	conn, err := net.Dial("tcp", "47.101.47.229:8889")
+	conn, err := net.Dial("tcp", "localhost:8889")
 	if err != nil {
 		log.Fatalln("client connected failed", err)
 	}
@@ -182,6 +182,8 @@ func (this *UserProcess) Login(userID int, userPW string) (err error) {
 		showMenu(loginResMes.LoginUserName)
 	} else if loginResMes.Code == 500 {
 		fmt.Println("account doesn't exist, register now")
+	} else if loginResMes.Code == 403 {
+		fmt.Println("password wrong")
 	} else {
 		fmt.Println("invalid operation")
 	}

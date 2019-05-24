@@ -20,7 +20,7 @@ func main() {
 	initUserDao()
 
 	//172.17.19.243
-	listener, err := net.Listen("tcp", "172.17.19.243:8889")
+	listener, err := net.Listen("tcp", "localhost:8889")
 	if err != nil {
 		log.Fatalln("listen failed", err)
 	}
@@ -28,6 +28,7 @@ func main() {
 
 	// accept connect on loop
 	fmt.Println("welcome to Vchat")
+	fmt.Println()
 	fmt.Println("waiting for first connection")
 	for {
 		conn, err := listener.Accept()

@@ -67,6 +67,88 @@ func (this *SmsProcess) SendMes(data []byte, conn net.Conn) {
 
 }
 
+func (this *SmsProcess) BinFileMes(mes *message.Message) {
+	var binMes message.BinTransfer
+	err := json.Unmarshal([]byte(mes.Data), &binMes)
+	if err != nil {
+		fmt.Println("mes.Data unmarshal failed from BinFileMes", err)
+	}
+
+	conn := model.MyUserDao.Pool.Get()
+	defer conn.Close()
+
+	user, err := model.MyUserDao.GetUserById(conn, binMes.SenderId)
+	if err != nil {
+		fmt.Println("get user by id form SendP2PMes failed", err)
+		return
+	}
+	binMes.SenderName = user.UserName
+	senderID := user.UserId
+	fmt.Println("!!!",binMes.FileName)
+
+	data, err := json.Marshal(binMes)
+	if err != nil {
+		fmt.Println("smsMes marshaled failed from BinFileMes", err)
+		return
+	}
+
+	mes.Data = string(data)
+
+	data, err = json.Marshal(mes)
+	if err != nil {
+		fmt.Println("mes marshal failed from BinFileMes", err)
+		return
+	}
+
+	up, ok := UserMGR.OnlineUser[binMes.ReceiverId]
+	// if receiver doesn't online, buffer offline message
+	if !ok {
+		err := model.MyUserDao.BufferMes(binMes.ReceiverId, data)
+		//user doesn't exist
+		if err != nil {
+			err = this.FeedbackMes(model.CONTENT_USER_NOEXIST, UserMGR.OnlineUser[senderID].Conn)
+			if err != nil {
+				fmt.Println("feedback failed", err)
+				return
+			}
+		}
+	} else {
+		this.SendMes(data, up.Conn)
+	}
+
+	/*for id, up := range UserMGR.OnlineUser {
+		if id == binMes.ReceiverId {
+			this.SendMes(data, up.Conn)
+		}
+	}*/
+
+}
+
+func (this *SmsProcess) FeedbackMes(content string, conn net.Conn) (err error) {
+	var smsMesFB message.FeedBackMes
+	smsMesFB.Content = content
+
+	data, err := json.Marshal(smsMesFB)
+	if err != nil {
+		fmt.Println("marshal failed from FeedBackMes")
+		return
+	}
+
+	var mes message.Message
+	mes.Type = message.FeedBackMesType
+	mes.Data = string(data)
+
+	data, err = json.Marshal(mes)
+	if err != nil {
+		fmt.Println("mes marshal failed from FeedBackMes")
+		return
+	}
+
+	this.SendMes(data, conn)
+	return
+
+}
+
 func (this *SmsProcess) SendP2PMes(mes *message.Message) {
 	var smsMesP2P message.SmsMesP2P
 	err := json.Unmarshal([]byte(mes.Data), &smsMesP2P)
@@ -83,6 +165,7 @@ func (this *SmsProcess) SendP2PMes(mes *message.Message) {
 		return
 	}
 	smsMesP2P.SenderName = user.UserName
+	senderID := user.UserId
 
 	data, err := json.Marshal(smsMesP2P)
 	if err != nil {
@@ -98,10 +181,26 @@ func (this *SmsProcess) SendP2PMes(mes *message.Message) {
 		return
 	}
 
-	for id, up := range UserMGR.OnlineUser {
+	up, ok := UserMGR.OnlineUser[smsMesP2P.ReceiverId]
+	// if receiver doesn't online, buffer offline message
+	if !ok {
+		err := model.MyUserDao.BufferMes(smsMesP2P.ReceiverId, data)
+		//user doesn't exist
+		if err != nil {
+			err = this.FeedbackMes(model.CONTENT_USER_NOEXIST, UserMGR.OnlineUser[senderID].Conn)
+			if err != nil {
+				fmt.Println("feedback failed", err)
+				return
+			}
+		}
+	} else {
+		this.SendMes(data, up.Conn)
+	}
+
+	/*for id, up := range UserMGR.OnlineUser {
 		if id == smsMesP2P.ReceiverId {
 			this.SendMes(data, up.Conn)
 		}
-	}
+	}*/
 
 }

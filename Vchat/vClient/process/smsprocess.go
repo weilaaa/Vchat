@@ -5,9 +5,59 @@ import (
 	"Vchat/vClient/utils"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"strings"
 )
 
 type Smsprocess struct {
+}
+
+//send picture
+func (this *Smsprocess) BinFileSms(fileName string, receiverID int) (err error) {
+	var mes message.Message
+	mes.Type = message.BinTransferType
+
+	var binMes message.BinTransfer
+	temp, err := ioutil.ReadFile(fileName)
+	if err != nil {
+		fmt.Println("read file failed", err)
+		return
+	}
+
+	i := strings.LastIndexAny(fileName, "/") //get the fileName
+	binMes.Content = temp
+	binMes.SenderId = curUser.UserId
+	binMes.ReceiverId = receiverID
+	binMes.FileName = fileName[i+1:]
+
+	data, err := json.Marshal(binMes)
+	if err != nil {
+		fmt.Println("binMes marshal from BinFileSms failed", err)
+		return
+	}
+
+	mes.Data = string(data)
+
+	data, err = json.Marshal(mes)
+	if err != nil {
+		fmt.Println("mes marshal failed from BinFileSms", err)
+		return
+	}
+
+	fmt.Println("sendData:", len(data))
+
+	tf := utils.Transfer{
+		Conn: curUser.Conn,
+	}
+
+	err = tf.WritePKG(data)
+	if err != nil {
+		fmt.Println("write data failed from BinFileSms", err)
+		return
+	}
+
+	return
+
 }
 
 // send group message

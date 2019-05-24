@@ -50,12 +50,13 @@ func (this *UserDao) Login(userID int, userPW string) (user *User, err error) {
 
 	user, err = this.GetUserById(conn, userID)
 	if err != nil {
+		err = ERROR_USER_NOEXIST
 		return
 	}
 
 	//judge the statement of user
 	if user.UserPW != userPW {
-		err = ERROR_USER_NOEXIST
+		err = ERROR_USER_PW
 		return
 	}
 
@@ -85,4 +86,55 @@ func (this *UserDao) Register(user *message.User) (err error) {
 		return
 	}
 	return
+}
+
+func (this *UserDao) BufferMes(receiverID int, data []byte) (err error) {
+	conn := this.Pool.Get()
+	defer conn.Close()
+
+	_, err = this.GetUserById(conn, receiverID)
+	if err != nil {
+		err = ERROR_USER_NOEXIST
+		return
+	}
+
+	_, err = conn.Do("Lpush", string(receiverID), string(data))
+	if err != nil {
+		fmt.Println("buffer mes failed")
+		return
+	} else {
+		fmt.Println("buffer mes succeed")
+	}
+
+	return
+
+}
+
+func (this *UserDao) GetMesById(userID int) (b bool, data []string) {
+	conn := this.Pool.Get()
+	defer conn.Close()
+
+	l, err := conn.Do("Llen", string(userID))
+	if l == 0 || err != nil {
+		b = false
+		return
+	}
+
+	for {
+		res, err := redis.String(conn.Do("Rpop", string(userID)))
+		if err != nil {
+			break
+		}
+		data = append(data, res)
+	}
+
+	/*res, err := redis.String(conn.Do("HGet", "mes", userID))
+	// this user has no offline message
+	if err != nil {
+		b = false
+		return
+	}*/
+
+	return true, data
+
 }

@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"time"
 )
 
 type UserProcess struct {
@@ -124,7 +125,6 @@ func (this *UserProcess) ServerProcessRegister(mes *message.Message) (err error)
 		if err == model.ERROR_USER_EXIST {
 			registerResMes.Code = 505
 			err.Error()
-			return
 		}
 	} else {
 		registerResMes.Code = 200
@@ -182,6 +182,7 @@ func (this *UserProcess) ServerProcessLogin(mes *message.Message, curUserId *int
 
 	// fill container
 	user, err := model.MyUserDao.Login(loginMes.UserID, loginMes.UserPW)
+	flag := false
 	// process error
 	if err != nil {
 		if err == model.ERROR_USER_NOEXIST {
@@ -215,6 +216,7 @@ func (this *UserProcess) ServerProcessLogin(mes *message.Message, curUserId *int
 		loginResMes.LoginUserName = user.UserName
 
 		fmt.Println(user, "login successfully")
+		flag = true
 	}
 
 	// package container
@@ -243,6 +245,22 @@ func (this *UserProcess) ServerProcessLogin(mes *message.Message, curUserId *int
 	if err != nil {
 		fmt.Println("send pkg failed", err)
 		return
+	}
+
+	if flag == true {
+		//check if there is offline message
+		b, data := model.MyUserDao.GetMesById(loginMes.UserID)
+		if b == false {
+			fmt.Println(loginMes.UserID, "has no offline messages")
+		} else {
+			//send offline message
+			fmt.Println(loginMes.UserID, "has offline messages")
+			for _, v := range data {
+				smsMes := SmsProcess{}
+				smsMes.SendMes([]byte(v), UserMGR.OnlineUser[loginMes.UserID].Conn)
+				time.Sleep(100 * time.Millisecond)
+			}
+		}
 	}
 
 	return
